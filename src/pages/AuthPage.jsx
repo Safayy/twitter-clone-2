@@ -1,13 +1,19 @@
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  getAuth,
+} from "firebase/auth";
 import { Button, Col, Image, Row, Modal, Form } from "react-bootstrap";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+// import axios from "axios";
 import useLocalStorage from "use-local-storage";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../components/AuthProvider";
 
 export default function AuthPage() {
   const loginImage = "https://sig1.co/img-twitter-1";
-  const url =
-    "https://30e29dba-daf6-4630-936e-6ce7f5799dfb-00-1bukjo02uw3fs.sisko.replit.dev";
+  // const url =
+  //   "https://30e29dba-daf6-4630-936e-6ce7f5799dfb-00-1bukjo02uw3fs.sisko.replit.dev";
 
   // Possible values: null (no modal shows), "Login", "SignUp"
   const [modalShow, setModalShow] = useState(null);
@@ -15,21 +21,29 @@ export default function AuthPage() {
   const handleShowLogin = () => setModalShow("Login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [authToken, setAuthToken] = useLocalStorage("authToken", "");
+  // const [authToken, setAuthToken] = useLocalStorage("authToken", "");
 
   const navigate = useNavigate();
+  const auth = getAuth();
+  const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
-    if (authToken) {
+    if (currentUser) {
       navigate("/profile");
     }
-  }, [authToken, navigate]);
+  }, [currentUser, navigate]);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${url}/signup`, { username, password });
-      console.log(res.data);
+      const res = await createUserWithEmailAndPassword(
+        auth,
+        username,
+        password
+      );
+      console.log(res.user);
+      // const res = await axios.post(`${url}/signup`, { username, password });
+      // console.log(res.data);
     } catch (error) {
       console.error(error);
     }
@@ -37,11 +51,12 @@ export default function AuthPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${url}/login`, { username, password });
-      if (res.data && res.data.auth === true && res.data.token) {
-        setAuthToken(res.data.token); // Save token to localStorage.
-        console.log("Login was successful, token saved");
-      }
+      await signInWithEmailAndPassword(auth, username, password);
+      // const res = await axios.post(`${url}/login`, { username, password });
+      // if (res.data && res.data.auth === true && res.data.token) {
+      //   setAuthToken(res.data.token); // Save token to localStorage.
+      //   console.log("Login was successful, token saved");
+      // }
     } catch (error) {
       console.error(error);
     }

@@ -1,25 +1,31 @@
-import { useContext, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { savePost } from "../features/posts/postsSlice";
+import { updatePost } from "../features/posts/postsSlice";
+import { useContext, useState } from "react";
 import { AuthContext } from "./AuthProvider";
 
-export default function NewPostModal({ show, handleClose }) {
-  const [postContent, setPostContent] = useState("");
-  const [file, setFile] = useState(null);
+export default function UpdatePostModal({
+  show,
+  handleClose,
+  postId,
+  originalPostContent,
+}) {
+  const [newPostContent, setNewPostContent] = useState(originalPostContent);
+  const [newFile, setNewFile] = useState(null);
+
   const dispatch = useDispatch();
   const { currentUser } = useContext(AuthContext);
   const userId = currentUser.uid;
 
-  const handleSave = () => {
-    dispatch(savePost({ userId, postContent, file }));
+  const handleUpdate = () => {
+    dispatch(updatePost({ userId, postId, newPostContent, newFile }));
     handleClose();
-    setPostContent("");
-    setFile(null);
+    setNewPostContent(newPostContent);
+    setNewFile(null);
   };
 
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
+  const handleNewFileChange = (event) => {
+    setNewFile(event.target.files[0]);
   };
 
   return (
@@ -30,13 +36,12 @@ export default function NewPostModal({ show, handleClose }) {
           <Form>
             <Form.Group controlId="postContent">
               <Form.Control
-                placeholder="What is happening?!"
+                defaultValue={originalPostContent}
                 as="textarea"
                 rows={3}
-                onChange={(e) => setPostContent(e.target.value)}
+                onChange={(event) => setNewPostContent(event.target.value)}
               />
-              <br />
-              <Form.Control type="file" onChange={handleFileChange} />
+              <Form.Control type="file" onChange={handleNewFileChange} />
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -44,9 +49,9 @@ export default function NewPostModal({ show, handleClose }) {
           <Button
             variant="primary"
             className="rounded-pill"
-            onClick={handleSave}
+            onClick={handleUpdate}
           >
-            Tweet
+            Update
           </Button>
         </Modal.Footer>
       </Modal>
